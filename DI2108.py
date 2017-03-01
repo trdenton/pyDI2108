@@ -51,12 +51,12 @@ class DI2108(object):
   Read a byte from the DI2108
   '''
   def _read(self):
-    size=16
+    size=128
     output=bytearray()
-    x=self.usbDevice.read(DI2108.ENDPOINT_IN,size,timeout=100)
+    x=self.usbDevice.read(DI2108.ENDPOINT_IN,size,timeout=400)
     output.extend(x)
     while(x[-1]!=0):
-      x=self.usbDevice.read(DI2108.ENDPOINT_IN,size,timeout=100)
+      x=self.usbDevice.read(DI2108.ENDPOINT_IN,size,timeout=400)
       output.extend(x)
     return output.decode('ascii')
 
@@ -75,22 +75,33 @@ class DI2108(object):
   :param arr: array to write, appends end-of-message
   '''
   def _write_cmd_bytes(self,arr):
-    return self._write(arr.append(bytearray([b'0x0D'])))  #append carriage return
+    return self._write(arr)  #append carriage return
 
   def _write_cmd_string(self,string):
     ascii_string = string.encode('ascii')
+    print "writing: '" + ascii_string + "'"
     self._write(ascii_string)
 
   def _write_cmd_args(self,args):
     out_string = " ".join(args) + "\r"
     self._write_cmd_string(out_string)
 
+
+
   def info(self,arg0):
     self._write_cmd_args(['info',str(arg0)]) 
     return self._read()
+
+  def ps(self,arg0):
+    self._write_cmd_args(['ps'],str(arg0))
+    return self._read()
+
+
   
    
  
 if __name__=="__main__":
-  d= DI2108.listDevices() 		
-  print d[0].info(1)
+  d= DI2108.listDevices()		
+
+  for x in xrange(1,10):
+    print d[0].info(x)
