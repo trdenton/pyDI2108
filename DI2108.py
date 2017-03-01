@@ -52,14 +52,12 @@ class DI2108(object):
   '''
   def _read(self):
     size=16
-    output=[]
+    output=bytearray()
     x=self.usbDevice.read(DI2108.ENDPOINT_IN,size,timeout=100)
-    output.append(x)
+    output.extend(x)
     while(x[-1]!=0):
       x=self.usbDevice.read(DI2108.ENDPOINT_IN,size,timeout=100)
-      output.append(x)
-    #TODO get this working wtf???
-    print type(output)
+      output.extend(x)
     return output.decode('ascii')
 
 
@@ -89,7 +87,7 @@ class DI2108(object):
 
   def info(self,arg0):
     self._write_cmd_args(['info',str(arg0)]) 
-    return self._read().decode('ascii')
+    return self._read()
   
    
  
