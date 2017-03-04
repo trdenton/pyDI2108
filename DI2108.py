@@ -4,7 +4,7 @@ import time
 
 
 '''
-Python class for reading DI2108 sensor from porcupine labs
+Python class for reading DI2108 data acquisition unit
 '''
 
 class DI2108(object):
@@ -80,7 +80,6 @@ class DI2108(object):
 
   def _write_cmd_string(self,string):
     ascii_string = string.encode('ascii')
-    print "writing: '" + ascii_string + "'"
     self._write(ascii_string)
 
   def _write_cmd_args(self,args):
@@ -117,7 +116,7 @@ class DI2108(object):
     """Set packet size
 
     arguments:
-    arg0 -- aan integer specifying packet size:
+    arg0 -- an integer specifying packet size:
       0 - Make packet size 16 bytes
       1 - Make packet size 32 bytes
       2 - Make packet size 64 bytes
@@ -173,7 +172,7 @@ class DI2108(object):
     """defines a sample rate divisor used to determine scan rate, or the rate at which the DI-
     2108 scans through the items in the scan list that you defined with the slist command
 
-    Sample rate per scan list element (Hz) = 60,000,000 ÷ (srate × dec)
+    Sample rate per scan list element (Hz) = 60,000,000 / (srate * dec)
 
     parameters:
     arg0 -- the srate to set
@@ -203,7 +202,7 @@ class DI2108(object):
     """sets the number of samples used to calculate the CIC filter
 
     parameters:
-    arg0 -- 1 ≤ arg0 ≤ 512 sets the number of values used by the Acquisition Mode defined by the filter
+    arg0 -- 1 <= arg0 <= 512 sets the number of values used by the Acquisition Mode defined by the filter
             command.
     """
     self._write_cmd_args(['dec',str(arg0)])
@@ -247,7 +246,7 @@ class DI2108(object):
     """defines configuration on a per port basis, input or switch.
 
     parameters:
-    arg0 -- binary configuration; 0 ≤ arg0 ≤ 12710 and maps input/switch configuration to each of seven digital ports. A value
+    arg0 -- binary configuration; 0 <= arg0 <= 12710 and maps input/switch configuration to each of seven digital ports. A value
             of one written to a port configures it as a switch. A value of zero configures the port as an
             input. 
 
