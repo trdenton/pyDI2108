@@ -75,15 +75,16 @@ class DI2108(object):
   Write to the DI2108
   :param arr: array to write, appends end-of-message
   '''
-  def _write_cmd_bytes(self,arr):
-    return self._write(arr)  #append carriage return
+  #def _write_cmd_bytes(self,arr):
+  #  return self._write(arr)  #append carriage return
 
   def _write_cmd_string(self,string):
     ascii_string = string.encode('ascii')
     self._write(ascii_string)
 
   def _write_cmd_args(self,args):
-    out_string = " ".join(args) + "\r"
+    out_string = " ".join(args)
+    out_string += "\r"
     self._write_cmd_string(out_string)
 
   #
@@ -109,8 +110,15 @@ class DI2108(object):
 
     returns an echo
     """
-    self._write_cmd_args(['info',str(arg0)]) 
-    return self._read()
+    #empirically found that there needs to be a space afterward if arg0 == 0??
+    arg=str(arg0)
+    if(arg=="0"):
+      arg += " "
+    self._write_cmd_args(['info',arg]) 
+    ret=self._read()
+    ret=ret.split("info %s "%arg)[1]
+    return ret.strip()
+    
 
   def ps(self,arg0):
     """Set packet size
