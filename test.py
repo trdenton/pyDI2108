@@ -35,10 +35,9 @@ for x in xrange(0,8):
 #try reading some data
 d.led(DI2108.LED_GREEN)
 d.add_channel_to_list(0,DI2108.CHANNEL_ANALOG_0)
-d.set_packet_size(DI2108.PACKET_SIZE_2048)
-print "Packet size...%d"%d.get_packet_size()
+d.set_packet_size(DI2108.PACKET_SIZE_16)
 raw_input("Hit enter to begin")
-d.start(DI2108.SCAN_MODE_NORMAL)
+d.start(DI2108.SCAN_MODE_IMMEDIATE)
 
 try:
   while True:
@@ -47,6 +46,6 @@ try:
       if reading != None:
         print "%f"%reading
 except KeyboardInterrupt as ki:
-  d.stop()
-
+  pass
+d.set_packet_size(DI2108.PACKET_SIZE_32)
 d.led(DI2108.LED_WHITE)

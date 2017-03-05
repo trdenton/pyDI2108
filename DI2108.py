@@ -411,7 +411,6 @@ class DI2108(object):
 
   def get_analog_channel(self,channel_num):
     data=self.get_channel(channel_num)
-    print "Raw data: %x"%data
     if data != None:
       #signed, 16-bit twos complement
       if (data & (1<<15)) != 0:
