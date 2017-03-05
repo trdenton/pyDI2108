@@ -1,5 +1,7 @@
 #!/usr/bin/python
+import numpy as np
 import time
+import csv
 from DI2108 import DI2108
 
 class Laser:
@@ -7,6 +9,8 @@ class Laser:
   A really simple class that uses one-off measurements from the DI2108 on one analog channel
   """
   def __init__(self,channel_num):
+    self.cal_slope=0.0
+    self.cal_intercept=0.0
     self.channel_num=channel_num
     self.dataq=None
     self.open()
@@ -21,7 +25,7 @@ class Laser:
         self.dataq=ds[0]
 
   def volts_to_distance(self,volts):
-    #TODO implement whatever translation function
+    return (volts*self.cal_slope)+self.cal_intercept
     return volts
 
   def get_reading(self):
@@ -31,13 +35,33 @@ class Laser:
 
     volts = self.dataq.get_analog_channel(self.channel_num)
     return self.volts_to_distance(volts)
+
+  def calibrate(self,filename):
+    with open(filename,'wb') as csvfile:
+      writer=csv.writer(csvfile,delimiter=',')
+      try:
+        while True:
+          dist=raw_input("Enter distance in mm.  Hit enter to take reading, Ctrl-C to stop> ")
+          dist_int = int(dist)
+          reading = self.get_reading()
+          writer.writerow([dist_int,reading])
+      except KeyboardInterrupt as ki:
+        print "done calibrating"
+      
+
+  def read_calibration(self,filename):
+    with open(filename,'rb') as csvfile:
+      reader=csv.reader(csvfile,delimiter=',')
+      data = [row for row in reader]
+      xd = [float(row[0]) for row in data]
+      yd = [float(row[1]) for row in data]
+      par = np.polyfit(xd, yd, 1, full=True)
+      self.cal_slope=par[0][0]
+      self.cal_intercept=par[0][1] 
   
 
 if __name__=="__main__":
   l = Laser(DI2108.CHANNEL_ANALOG_0)
-  try:
-    while True:
-      print "%f"%l.get_reading()
-      time.sleep(0.5)
-  except KeyboardInterrupt as e:
-    print "see ya!"
+  l.read_calibration("test_cal.csv")
+  print l.get_reading()
+  
