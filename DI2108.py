@@ -255,7 +255,10 @@ class DI2108(object):
 
     returns an echo 
     """
-    self._write_cmd_args(['filter',str(arg0),str(arg1)])
+    arg0=str(arg0)
+    arg1=str(arg1)
+    arg1+=" "
+    self._write_cmd_args(['filter',arg0,arg1])
     return  self._read()
  
   def dec(self,arg0):
@@ -398,6 +401,9 @@ class DI2108(object):
       return True
     except Exception as e: #data timed out
       return False
+
+  def get_last_data_block(self):
+    return self.last_reading
 
   def get_channel(self,channel_num):
     #split up every 2 bytes
