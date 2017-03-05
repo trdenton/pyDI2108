@@ -98,7 +98,8 @@ class DI2108(object):
   '''
   def close(self):
     self.usb_device.reset()
-    return self.usb_device.attach_kernel_driver(DI2108.INTERFACE_NUM)
+    if(self.usb_device.is_kernel_driver_active(DI2108.INTERFACE_NUM)):
+      return self.usb_device.attach_kernel_driver(DI2108.INTERFACE_NUM)
 
   '''
   Read a command echo from the DI2108
@@ -190,7 +191,7 @@ class DI2108(object):
     """
     self._write_cmd_args(['ps',str(arg0)+' '])
     ret= self._read_command_response()
-    return ret.rstrip()==("ps %s"%arg0)
+    return str(("ps %s"%str(arg0)).rstrip()) in ret
 
   def start(self,arg0):
     """Initiates scanning (reading inputs)
@@ -227,7 +228,8 @@ class DI2108(object):
     returns an echo
     """
     self._write_cmd_args(['slist',str(arg0),str(arg1)])
-    return  self._read_command_response()
+    ret=  self._read_command_response()
+    return ("slist %s %s"%(str(arg0),str(arg1))).rstrip() in ret
  
   def srate(self,arg0):
     """defines a sample rate divisor used to determine scan rate, or the rate at which the DI-
@@ -241,7 +243,8 @@ class DI2108(object):
     returns an echo 
     """
     self._write_cmd_args(['srate',str(arg0)])
-    return  self._read_command_response()
+    ret=  self._read_command_response()
+    return ("srate %s"%(str(arg0))).rstrip() in ret
 
   def filter(self,arg0,arg1):
     """ Changes the acquisition mode for an analog channel.
@@ -260,7 +263,8 @@ class DI2108(object):
     arg1=str(arg1)
     arg1+=" "
     self._write_cmd_args(['filter',arg0,arg1])
-    return  self._read_command_response()
+    ret=  self._read_command_response()
+    return ("filter %s %s"%(str(arg0),str(arg1))).rstrip() in ret
  
   def dec(self,arg0):
     """sets the number of samples used to calculate the CIC filter
@@ -270,7 +274,8 @@ class DI2108(object):
             command.
     """
     self._write_cmd_args(['dec',str(arg0)+' '])
-    return  self._read_command_response()
+    ret=  self._read_command_response()
+    return ("dec %s "%(str(arg0))).rstrip() in ret
 
   def ffl(self,arg0):
     """Configure the moving average filter
@@ -281,7 +286,8 @@ class DI2108(object):
     returns an echo
     """
     self._write_cmd_args(['ffl',str(arg0)])
-    return  self._read_command_response()
+    ret=  self._read_command_response()
+    return ("ffl %s"%(str(arg0))).rstrip() in ret
 
   def led(self,arg0):
     """Turn on the LED
@@ -300,11 +306,13 @@ class DI2108(object):
     returns an echo
     """
     self._write_cmd_args(['led',str(arg0)])
-    return  self._read_command_response()
+    ret=  self._read_command_response()
+    return ("led %s"%(str(arg0))).rstrip() in ret
 
   def dout(self,arg0):
     self._write_cmd_args(['dout',str(arg0)])
-    return  self._read_command_response()
+    ret=  self._read_command_response()
+    return ("dout %s"%(str(arg0))).rstrip() in ret
 
   def endo(self,arg0):
     """defines configuration on a per port basis, input or switch.
@@ -317,7 +325,8 @@ class DI2108(object):
     returns an echo
     """
     self._write_cmd_args(['endo',str(arg0)])
-    return  self._read_command_response()
+    ret=  self._read_command_response()
+    return ("endo %s"%(str(arg0))).rstrip() in ret
 
   def din(self):
     """returns the state of all ports as a 7-bit value.
@@ -368,7 +377,9 @@ class DI2108(object):
           PACKET_SIZE_512, PACKET_SIZE_1024, PACKET_SIZE_2048
     """
     self.packet_size=DI2108.PACKET_SIZE_ARG_TO_SIZE[arg]
-    self.ps(arg)
+    while(self.ps(arg)==False):
+      self.usb_device.reset()
+      pass
 
   def get_packet_size(self):
     """returns the packet size- one of PACKET_SIZE_16, PACKET_SIZE_32, PACKET_SIZE_64, PACKET_SIZE_128, 
@@ -397,7 +408,8 @@ class DI2108(object):
     pos -- the position to add ch to  in the scan list (0-11)
     ch -- the channel to use (CHANNEL_ANALOG_0, etc)
     """
-    self.slist(ch,pos)
+    while (self.slist(ch,pos)==False):
+      pass
 
   def read_data(self,timeout=10):
     try:

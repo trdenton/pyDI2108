@@ -60,7 +60,6 @@ class Laser:
     volts=raw_reading*10.0/32768.0
 
     mm = self.volts_to_distance(volts)
-    print "volts: %f distance: %f"%(volts,mm)
     return mm
 
   def calibrate(self,filename):
@@ -87,10 +86,14 @@ class Laser:
       self.cal_intercept=par[0][1] 
       print "slope %f intercept %f"%(self.cal_slope,self.cal_intercept)
   
+  def close(self):
+    self.dataq.close()
+  
 
 if __name__=="__main__":
   l = Laser(DI2108.CHANNEL_ANALOG_0)
   #l.calibrate('test.csv')
-  #l.read_calibration("test.csv")
+  l.read_calibration("test.csv")
   print l.get_reading()
+  l.close()
   
