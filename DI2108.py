@@ -101,16 +101,17 @@ class DI2108(object):
     return self.usb_device.attach_kernel_driver(DI2108.INTERFACE_NUM)
 
   '''
-  Read a byte from the DI2108
+  Read a command echo from the DI2108
   '''
-  def _read(self):
+  def _read_command_response(self):
     size=self.packet_size
     output=bytearray()
     x=self.usb_device.read(DI2108.ENDPOINT_IN,size,timeout=400)
     output.extend(x)
-    while(x[-1]!=0):
-      x=self.usb_device.read(DI2108.ENDPOINT_IN,size,timeout=400)
-      output.extend(x)
+#    while(x[-1]!=0):
+#      print "Waiting..."
+#      x=self.usb_device.read(DI2108.ENDPOINT_IN,size,timeout=400)
+#      output.extend(x)
     return output.decode('ascii')
 
 
@@ -166,7 +167,7 @@ class DI2108(object):
     if(arg=="0"):
       arg += " "
     self._write_cmd_args(['info',arg]) 
-    ret=self._read()
+    ret=self._read_command_response()
     ret=ret.split("info %s "%arg)[1]
     return ret.strip()
     
@@ -188,7 +189,8 @@ class DI2108(object):
     returns an echo
     """
     self._write_cmd_args(['ps',str(arg0)+' '])
-    return self._read()
+    ret= self._read_command_response()
+    return ret.rstrip()==("ps %s"%arg0)
 
   def start(self,arg0):
     """Initiates scanning (reading inputs)
@@ -212,9 +214,8 @@ class DI2108(object):
     """Terminates scanning.
     returns an echo
     """
-    self._write_cmd_args(['stop'])
-    while self.read_data():
-      pass
+    self._write_cmd_args(['stop '])
+    self._read_command_response()
  
   def slist(self,arg0,arg1):
     """Used to configure the scan list.
@@ -226,7 +227,7 @@ class DI2108(object):
     returns an echo
     """
     self._write_cmd_args(['slist',str(arg0),str(arg1)])
-    return  self._read()
+    return  self._read_command_response()
  
   def srate(self,arg0):
     """defines a sample rate divisor used to determine scan rate, or the rate at which the DI-
@@ -240,7 +241,7 @@ class DI2108(object):
     returns an echo 
     """
     self._write_cmd_args(['srate',str(arg0)])
-    return  self._read()
+    return  self._read_command_response()
 
   def filter(self,arg0,arg1):
     """ Changes the acquisition mode for an analog channel.
@@ -259,7 +260,7 @@ class DI2108(object):
     arg1=str(arg1)
     arg1+=" "
     self._write_cmd_args(['filter',arg0,arg1])
-    return  self._read()
+    return  self._read_command_response()
  
   def dec(self,arg0):
     """sets the number of samples used to calculate the CIC filter
@@ -268,8 +269,8 @@ class DI2108(object):
     arg0 -- 1 <= arg0 <= 512 sets the number of values used by the Acquisition Mode defined by the filter
             command.
     """
-    self._write_cmd_args(['dec',str(arg0)])
-    return  self._read()
+    self._write_cmd_args(['dec',str(arg0)+' '])
+    return  self._read_command_response()
 
   def ffl(self,arg0):
     """Configure the moving average filter
@@ -280,7 +281,7 @@ class DI2108(object):
     returns an echo
     """
     self._write_cmd_args(['ffl',str(arg0)])
-    return  self._read()
+    return  self._read_command_response()
 
   def led(self,arg0):
     """Turn on the LED
@@ -299,11 +300,11 @@ class DI2108(object):
     returns an echo
     """
     self._write_cmd_args(['led',str(arg0)])
-    return  self._read()
+    return  self._read_command_response()
 
   def dout(self,arg0):
     self._write_cmd_args(['dout',str(arg0)])
-    return  self._read()
+    return  self._read_command_response()
 
   def endo(self,arg0):
     """defines configuration on a per port basis, input or switch.
@@ -316,7 +317,7 @@ class DI2108(object):
     returns an echo
     """
     self._write_cmd_args(['endo',str(arg0)])
-    return  self._read()
+    return  self._read_command_response()
 
   def din(self):
     """returns the state of all ports as a 7-bit value.
@@ -324,14 +325,14 @@ class DI2108(object):
     returns din <status>
     """
     self._write_cmd_args(['din'])
-    return  self._read()
+    return  self._read_command_response()
 
   def reset(self):
     """reset the DI-2108 counter
     returns an echo
     """
     self._write_cmd_args(['reset 1'])
-    return  self._read()
+    return  self._read_command_response()
 
 
   #
@@ -385,6 +386,10 @@ class DI2108(object):
   def stop_reading(self,arg):
     """Stop reading data
     """
+    try:
+      self.read_data()
+    except Exception as e:
+      pass
     self.stop()
 
   def add_channel_to_list(self,pos,ch):
@@ -394,9 +399,9 @@ class DI2108(object):
     """
     self.slist(ch,pos)
 
-  def read_data(self):
+  def read_data(self,timeout=10):
     try:
-      x=self.usb_device.read(DI2108.ENDPOINT_IN,self.packet_size,timeout=1)
+      x=self.usb_device.read(DI2108.ENDPOINT_IN,self.packet_size,timeout=timeout)
       self.last_reading=x
       return True
     except Exception as e: #data timed out

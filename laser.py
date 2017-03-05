@@ -14,16 +14,16 @@ class Laser:
     self.channel_num=channel_num
     self.dataq=None
     self.open()
+    self.dataq.reset()
     self.dataq.add_channel_to_list(0,channel_num)
     self.dataq.led(DI2108.LED_BLUE)
-    #minimum sampling rate
-    self.dataq.srate(65535)
-
+    #set sampling rate
+    self.dataq.srate(0x7FFF)
     #decimation filter size 128
-    self.dataq.filter(DI2108.CHANNEL_ANALOG_0,1)
-    self.dataq.dec(128)
+    self.dataq.filter('*',1)
+    self.dataq.dec(16)
 
-    self.dataq.set_packet_size(DI2108.PACKET_SIZE_16) 
+    self.dataq.set_packet_size(DI2108.PACKET_SIZE_64) 
 
   def open(self):
     if(self.dataq==None):
@@ -38,11 +38,27 @@ class Laser:
     self.dataq.start(DI2108.SCAN_MODE_NORMAL)
     while self.dataq.read_data()==False:
       pass
-    self.dataq.stop()
-#    dat=self.dataq.get_last_data_block()
+    try:
+      self.dataq.stop()
+    except Exception as e:
+      pass
+    dat=self.dataq.get_last_data_block()
+    
 #    print "Got last data block size %d"%len(dat)
 
-    volts = self.dataq.get_analog_channel(self.channel_num)
+   # for x in xrange(0,len(dat)/2):
+    #  print "[%02x,%02x]"%(dat[2*x],dat[2*x+1])
+    
+    #get the last two bytes of that whole reading
+    byte1=dat[-2]
+    byte2=dat[-1]
+
+    raw_reading = (byte2<<8)|(byte1)
+    if((raw_reading&(1<<15))!=0):
+      raw_reading=raw_reading-(1<<16)
+    
+    volts=raw_reading*10.0/32768.0
+
     mm = self.volts_to_distance(volts)
     print "volts: %f distance: %f"%(volts,mm)
     return mm

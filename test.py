@@ -39,13 +39,3 @@ d.set_packet_size(DI2108.PACKET_SIZE_16)
 raw_input("Hit enter to begin")
 d.start(DI2108.SCAN_MODE_IMMEDIATE)
 
-try:
-  while True:
-    if d.read_data():
-      reading = d.get_analog_channel(0)
-      if reading != None:
-        print "%f"%reading
-except KeyboardInterrupt as ki:
-  pass
-d.set_packet_size(DI2108.PACKET_SIZE_32)
-d.led(DI2108.LED_WHITE)
