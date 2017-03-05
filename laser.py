@@ -26,7 +26,6 @@ class Laser:
 
   def volts_to_distance(self,volts):
     return (volts*self.cal_slope)+self.cal_intercept
-    return volts
 
   def get_reading(self):
     self.dataq.start(DI2108.SCAN_MODE_IMMEDIATE)
