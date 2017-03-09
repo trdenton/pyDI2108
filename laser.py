@@ -93,7 +93,7 @@ class Laser:
 if __name__=="__main__":
   l = Laser(DI2108.CHANNEL_ANALOG_0)
   #l.calibrate('test.csv')
-  l.read_calibration("test.csv")
+  #l.read_calibration("test.csv")
   print l.get_reading()
   l.close()
   
