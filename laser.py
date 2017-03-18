@@ -67,10 +67,10 @@ class Laser:
       writer=csv.writer(csvfile,delimiter=',')
       try:
         while True:
-          dist=raw_input("Enter distance in mm.  Hit enter to take reading, Ctrl-C to stop> ")
-          dist_int = int(dist)
+          dist=raw_input("Enter distance in inches (eg two and one-half inches would be 2.5).  Hit enter to take a reading, Ctrl-C to stop> ")
+          dist_float = float(dist)
           reading = self.get_reading()
-          writer.writerow([dist_int,reading])
+          writer.writerow([dist_float,reading])
       except KeyboardInterrupt as ki:
         print "done calibrating"
       
