@@ -75,7 +75,7 @@ class Laser:
         print "done calibrating"
       
 
-  def read_calibration(self,filename):
+  def read_calibration(self,filename,debug=False):
     with open(filename,'rb') as csvfile:
       reader=csv.reader(csvfile,delimiter=',')
       data = [row for row in reader]
@@ -84,7 +84,8 @@ class Laser:
       par = np.polyfit(xd, yd, 1, full=True)
       self.cal_slope=par[0][0]
       self.cal_intercept=par[0][1] 
-      print "slope %f intercept %f"%(self.cal_slope,self.cal_intercept)
+      if debug:
+          print "slope %f intercept %f"%(self.cal_slope,self.cal_intercept)
   
   def close(self):
     self.dataq.close()
