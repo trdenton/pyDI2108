@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use DateTime::Format::Strptime;
-my $fmt = '%a %b  %d %H:%M:%S CST %Y';
+my $fmt = '%a %b %d %H:%M:%S CST %Y';
 
 my $last_time_string="";
 my $time_string="";
