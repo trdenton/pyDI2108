@@ -87,6 +87,7 @@ class DI2108(object):
   '''
   def __init__(self,dev):
     self.last_reading=None
+    self.timeout=1000
     self.usb_device=dev
     self.usb_device.reset()
     if(self.usb_device.is_kernel_driver_active(DI2108.INTERFACE_NUM)):
@@ -107,7 +108,7 @@ class DI2108(object):
   def _read_command_response(self):
     size=self.packet_size
     output=bytearray()
-    x=self.usb_device.read(DI2108.ENDPOINT_IN,size,timeout=400)
+    x=self.usb_device.read(DI2108.ENDPOINT_IN,size,timeout=self.timeout)
     output.extend(x)
 #    while(x[-1]!=0):
 #      print "Waiting..."
@@ -245,6 +246,17 @@ class DI2108(object):
     self._write_cmd_args(['srate',str(arg0)])
     ret=  self._read_command_response()
     return ("srate %s"%(str(arg0))).rstrip() in ret
+
+  def calculate_timeout(self,srate,dec,num_channels,buffer_size):
+    # sample rate is 60,000,000 / (srate * dec)
+    # buffer size is known
+    # #
+    freq_hz =60000000.0 / (float(srate) *float(dec))
+    #print "frequency is ",freq_hz," Hz"
+    data_size = freq_hz*num_channels*2	# 2 bytes per sample
+    time_to_fill_the_buffer = float(buffer_size)/(float(data_size)*float(freq_hz))
+    self.timeout=int(time_to_fill_the_buffer*8*1000)	#1000 to convert s to ms, 2 is FOS
+    return self.timeout
 
   def filter(self,arg0,arg1):
     """ Changes the acquisition mode for an analog channel.
@@ -411,9 +423,12 @@ class DI2108(object):
     while (self.slist(ch,pos)==False):
       pass
 
-  def read_data(self,timeout=10):
+  def read_data(self):
+    if self.timeout is None:
+      print "Error - run self.calculate_timeout first...."
+      return False
     try:
-      x=self.usb_device.read(DI2108.ENDPOINT_IN,self.packet_size,timeout=timeout)
+      x=self.usb_device.read(DI2108.ENDPOINT_IN,self.packet_size,timeout=self.timeout)
       self.last_reading=x
       return True
     except Exception as e: #data timed out
