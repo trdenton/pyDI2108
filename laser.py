@@ -68,8 +68,13 @@ class Laser:
       writer=csv.writer(csvfile,delimiter=',')
       try:
         while True:
-          dist=raw_input("Enter distance in inches (eg two and one-half inches would be 2.5).  Hit enter to take a reading, Ctrl-C to stop> ")
-          dist_float = float(dist)
+          dist=raw_input("Enter distance in inches (eg two and one-half inches would be 2.5).  Enter non-number to stop> ")
+          dist_float=0
+          try:
+              dist_float = float(dist)
+          except:
+              print "Exiting calibration routine"
+              break
           reading = self.get_reading()
           writer.writerow([dist_float,reading])
       except KeyboardInterrupt as ki:
@@ -96,7 +101,7 @@ class Laser:
 if __name__=="__main__":
   l = Laser(DI2108.CHANNEL_ANALOG_0)
   #print "timeout is ",l.dataq.calculate_timeout(0x7fff,128,1,64)
-  #l.calibrate('test.csv')
+  l.calibrate('test.csv')
   #l.read_calibration("test.csv")
   print l.get_reading()
   #l.close()
