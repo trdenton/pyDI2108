@@ -47,8 +47,8 @@ class Laser:
     
 #    print "Got last data block size %d"%len(dat)
 
-    for x in xrange(0,len(dat)/2):
-      print "[%02x,%02x]"%(dat[2*x],dat[2*x+1])
+#    for x in xrange(0,len(dat)/2):
+#      print "[%02x,%02x]"%(dat[2*x],dat[2*x+1])
     
     #get the last two bytes of that whole reading
     byte1=dat[-2]
@@ -95,7 +95,7 @@ class Laser:
 
 if __name__=="__main__":
   l = Laser(DI2108.CHANNEL_ANALOG_0)
-  print "timeout is ",l.dataq.calculate_timeout(0x7fff,128,1,64)
+  #print "timeout is ",l.dataq.calculate_timeout(0x7fff,128,1,64)
   #l.calibrate('test.csv')
   #l.read_calibration("test.csv")
   print l.get_reading()
